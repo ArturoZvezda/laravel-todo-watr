@@ -1,26 +1,10 @@
 <template>
     <div class="container">
         <div class="box">
-            <div class="field is-grouped">
-                <p class="control is-expanded">
-                    <input class="input" type="text" placeholder="Nuevo recordatorio" v-model="todoItemText">
-                </p>
-                <p class="control">
-                    <a class="button is-info" @click="addTodo">
-                        Agregar
-                    </a>
-                </p>
-            </div>
+            <todo-input-component  @add-todo="addTodo" ></todo-input-component>
         </div>
         <table class="table is-bordered">
-            <tr v-for="(todo, index) in items" :key="index">
-                <td class="is-fullwidth" style="cursor: pointer" :class="{ 'is-done': todo.done }" @click="toggleDone(todo)">
-                    {{ todo.text }}
-                </td>
-                <td class="is-narrow">
-                    <a class="button is-danger is-small" @click="removeTodo(todo)">Eliminar</a>
-                </td>
-            </tr>
+             <tr @remove-todo="removeTodo" @toggle-done="toggleDone" is="todo-item-component" v-for="(todo, index) in items"  :text="todo.text" :done="todo.done" :id="todo.id"></tr>
         </table>
     </div>
 </template>
@@ -33,35 +17,65 @@
      * - En addTodo, removeTodo y toggleTodo deben hacer los cambios pertinentes para que las modificaciones,
      *   addiciones o elimicaiones tomen efecto en el backend asi como la base de datos.
      */
+    import TodoInput from './TodoInput.vue'
+    import TodoItem from './TodoItem.vue'
+    
     export default {
         data () {
             return {
-                todoItemText: '',
                 items: [],
             }
         },
+        components:{
+          'todo-input-component':TodoInput,
+          'todo-item-component':TodoItem,
+        },
         mounted () {
-            this.items = [
-                { text: 'Primer recordatorio', done: true },
-                { text: 'Segundo recordatorio', done: false },
-                { text: 'Tercero recordatorio', done: false },
-                { text: 'Cuarto recordatorio', done: true },
-                { text: 'Quinto recordatorio', done: false },
-            ]
+
+  window.axios.get('/todos').then(({ data }) => {
+
+    this.items = [];
+
+
+
+    for(var item in data)
+{
+
+      this.items.push( { text: data[item].text, done: data[item].done, id: data[item].id });
+            
+}
+
+    });
+      
         },
         methods: {
-            addTodo () {
-                let text = this.todoItemText.trim()
+            addTodo (todo) {
+                console.log(todo)
+                let text = todo.text.trim()
+
                 if (text !== '') {
-                    this.items.push({ text: text, done: false })
-                    this.todoItemText = ''
+                    
+                window.axios.post('/todos',todo).then(({ data }) => {
+                    this.items.push(data)
+                });
+                
                 }
             },
-            removeTodo (todo) {
-                this.items = this.items.filter(item => item !== todo)
+            removeTodo (id) {
+                
+                var self = this;
+  window.axios.delete('/todos/' + id).then(({ data }) => {
+                 self.items = this.items.filter(item => item.id !== id);
+    });
+
             },
             toggleDone (todo) {
-                todo.done = !todo.done
+
+                var self = this;
+  window.axios.put('/todos/' + todo.id,{done:todo.done}).then(({ data }) => {
+                 
+    });
+                
             }
         }
     }

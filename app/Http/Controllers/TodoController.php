@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Todo;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
@@ -12,16 +14,16 @@ use Illuminate\Http\Request;
  * Class TodoController
  * @package App\Http\Controllers
  */
-class TodoController extends Controller
-{
+class TodoController extends Controller {
+
     /**
      * Este método del controlador regresa el listado del todos de la app
      * en un response del tipo json ordenados desde el más antiguo al más nuevo.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function index()
-    {
+    public function index() {
+        return Todo::orderBy('created_at', 'ASC')->get();
         // TODO
     }
 
@@ -30,12 +32,17 @@ class TodoController extends Controller
      * y al final regresa el registro creado en un response del tipo
      * json.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         // TODO
+        $request->validate([
+            'text' => 'required'
+        ]);
+
+        $todo = Todo::create(['text' => $request->text,'done'=>false]);
+        return $todo;
     }
 
     /**
@@ -43,12 +50,19 @@ class TodoController extends Controller
      * y regresa el mismo item modificado.
      *
      * @param integer $id
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function update($id, Request $request)
-    {
+    public function update($id, Request $request) {
         // TODO
+    
+        $todo  = Todo::find($id);
+        
+        $todo->done = $request->done;
+        $todo->save();
+        
+        return $todo;
+        
     }
 
     /**
@@ -56,10 +70,18 @@ class TodoController extends Controller
      * en caso de fallo pero igual en tipo json.
      *
      * @param integer $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function delete($id)
-    {
+    public function destroy($id) {
         // TODO
+        $todo  = Todo::find($id);
+        
+        try{
+            $todo->delete();
+            return response()->json("{}", 200);
+        }catch (\Exception $e){
+            return response()->json("{}", 400);
+        }
     }
+
 }
