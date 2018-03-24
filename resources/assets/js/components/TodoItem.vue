@@ -25,23 +25,20 @@
                     required: true
             }
     },
-            data () {
+                data () {
     return {
     mutableItem:this
     }
     },
-            mounted () {
 
-    },
             methods: {
             removeTodo (id) {
+            this.$store.dispatch('removeTodo',id) 
 
-            this.$emit('remove-todo', id);
             },
-                    toggleDone (id) {
-
-            this.mutableItem.done = !this.mutableItem.done
-                    this.$emit('toggle-done', {id:id, done:this.mutableItem.done});
+             toggleDone (id) {
+                 this.mutableItem.done = !this.mutableItem.done;
+                    this.$store.dispatch('toggleDone',id) 
             }
             }
     }

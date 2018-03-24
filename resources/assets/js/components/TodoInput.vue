@@ -27,7 +27,7 @@
                 let text = this.todoItemText.trim()
 
                 if (text !== '') {
-                          this.$emit('add-todo', {text:text,done:false});
+                        this.$store.dispatch('addTodo',{text:text,done:false}) // dispatch loading
                       this.todoItemText = '';
 
                 }
